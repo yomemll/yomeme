@@ -209,6 +209,32 @@
 </head>
 <body>
 
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-analytics.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJJifdYTp7gGFrkmQVOS1XxVtWERPIpXM",
+            authDomain: "yomemll.firebaseapp.com",
+            projectId: "yomemll",
+            storageBucket: "yomemll.firebasestorage.app",
+            messagingSenderId: "840958837511",
+            appId: "1:840958837511:web:3d53b798822e03020dbba2",
+            measurementId: "G-XSSTG3G6M9"
+        };
+
+         // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+    </script>
+
     <div id="data"></div>
     <div id="red"></div>
 
@@ -228,6 +254,25 @@
 
     </script>
     <script>
+
+        async function sendData() {
+        const name = userId
+        const time = `time=${mn}m ${sc}s`
+
+            try {
+                await addDoc(collection(db, "messages"), {
+                    name: `userId=${userId}`,
+                    time: `time=${mn}m ${sc}s`
+                });
+            } catch (e) {
+                console.error("에러 발생:", e);
+            }
+        }
+
+        window.sendData = sendData;
+
+        const yomemll=String
+        eval('yomemll')
 
         const myDIV = document.getElementById(id="myDiv");
         const butt = document.getElementById(id="but");
