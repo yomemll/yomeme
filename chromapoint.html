@@ -239,7 +239,7 @@
         window.sendData = async function () {
             try {
                 await addDoc(collection(db, "messages"), {
-                    name: `userId=${window.userId}`,
+                    name: `userId=${window.UID}`,
                     time: `time=${window.mn}m ${window.sc}s`
                 });
             } catch (e) {
@@ -272,6 +272,8 @@
         const butt = document.getElementById(id="but");
         const cancelbtn = document.getElementById(id="cancel");
         const userId = document.getElementById(id="userId");
+
+        var UID = userId
 
         butt.addEventListener('click', () => {
             const val = userId.value.trim();
