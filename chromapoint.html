@@ -231,7 +231,7 @@
          // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
-        
+
         window.db = getFirestore(app);
         window.addDoc = addDoc;
         window.collection = collection;
@@ -262,7 +262,7 @@
         const time = `time=${mn}m ${sc}s`
 
             try {
-                await addDoc(collection(db, "messages"), {
+                await window.addDoc(window.collection(window.db, "messages"), {
                     name: `userId=${userId}`,
                     time: `time=${mn}m ${sc}s`
                 });
