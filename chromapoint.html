@@ -235,6 +235,17 @@
         window.db = getFirestore(app);
         window.addDoc = addDoc;
         window.collection = collection;
+
+        window.sendData = async function () {
+            try {
+                await addDoc(collection(db, "messages"), {
+                    name: `userId=${window.userId}`,
+                    time: `time=${window.mn}m ${window.sc}s`
+                });
+            } catch (e) {
+                console.error("에러 발생:", e);
+            }
+        };
     </script>
 
     <div id="data"></div>
@@ -256,22 +267,6 @@
 
     </script>
     <script>
-
-        async function sendData() {
-        const name = userId
-        const time = `time=${mn}m ${sc}s`
-
-            try {
-                await window.addDoc(window.collection(window.db, "messages"), {
-                    name: `userId=${userId}`,
-                    time: `time=${mn}m ${sc}s`
-                });
-            } catch (e) {
-                console.error("에러 발생:", e);
-            }
-        }
-
-        window.sendData = sendData;
 
         const myDIV = document.getElementById(id="myDiv");
         const butt = document.getElementById(id="but");
@@ -327,8 +322,6 @@
             if (red==0) {
                 lll=1
                 randomStart();
-                String=mn
-                String=sc
                 document.getElementById("red").innerHTML="red on 0";
                 document.getElementById("win").innerHTML="미션해결 시간= "  + mn + "분 : " + sc + "초";
                 bDisplay=0;
