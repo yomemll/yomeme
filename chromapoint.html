@@ -276,7 +276,7 @@
 
         butt.addEventListener('click', () => {
             const val = userId.value.trim();
-            var UID = val
+            window.UID = val
             if (typeof window.containsSwearWord !== 'function') {
                 alert('욕설 필터 모듈을 불러오지 못했습니다 (ESM improt 확인)');
                 console.error('[swear] containsSwearWord not ready');
