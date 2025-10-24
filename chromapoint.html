@@ -209,7 +209,8 @@
 </head>
 <body>
 
-    <script type="module">
+    <script type="module">//[취급주의!!] 아무것도 바꾸면 안됨 겨우 성공함
+
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
         import { getFirestore, collection, addDoc} from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
@@ -238,8 +239,8 @@
 
         window.sendData = async function () {
             try {
-                await addDoc(collection(db, "messages"), {
-                    name: `userId=${window.UID}`,
+                await addDoc(collection(db, "messages"), {//여기서 오류 진짜 많이남
+                    name: `userId=${window.UID}`,//아이디 안뜸 해결 못함
                     time: `time=${window.mn}m ${window.sc}s`
                 });
             } catch (e) {
@@ -273,10 +274,9 @@
         const cancelbtn = document.getElementById(id="cancel");
         const userId = document.getElementById(id="userId");
 
-        var UID = userId
-
         butt.addEventListener('click', () => {
             const val = userId.value.trim();
+            var UID = val
             if (typeof window.containsSwearWord !== 'function') {
                 alert('욕설 필터 모듈을 불러오지 못했습니다 (ESM improt 확인)');
                 console.error('[swear] containsSwearWord not ready');
@@ -295,6 +295,7 @@
             alert(`입력한 아이디는 ${val}입니다`);
             sendData();
             resetGame();
+            console.log(val)
         })
         cancelbtn.addEventListener('click', () => {
             alert("취소하였습니다")
