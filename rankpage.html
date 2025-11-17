@@ -1,0 +1,315 @@
+<!doctype thml>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>랭킹(top50)</title>
+    <style>
+        :root {
+            --max-w: 600px;
+        }
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, segoe UI, Roboto, 'Noto sans KR, Arial, sans-serif';
+            background-color: #f6f7fb;
+            color: #222;
+        }
+
+        .wrap {
+            margin: 0 auto;
+            padding: 24px 16px 48px;
+        }
+
+        .header {
+            max-width: var(--max-w);
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .title {
+            font-weight: 800;
+            font-size: 20px;
+        }
+
+        .sub {
+            color: #666;
+            font-size: 12px;
+        }
+
+        .card{
+            max-width: var(--max-w);
+            margin: 0 auto;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            padding: 12px 14px;
+            border-bottom: 1px solid #eee;
+            background: #fafafa;
+        }
+
+        .btn {
+            appearance: none;
+            border: 0;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: #2d6cdf;
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .ghost {
+            background: #e9eefc;
+            color: #1b3ea3;
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        thead th {
+            position: sticky; top: 0;
+            background: #f3f6ff;
+            color: #1b3ea3;
+            font-weight: 800;
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid #e2e8ff;
+            z-index: 1;
+        }
+
+        tbody th{
+            padding: 12px 10px;
+            border-bottom: 1px solid #f0f0f0;
+            white-space: nowrap;
+        }
+
+        tbody tr:nth-child(odd) { background: #f2f7ff; }
+
+        tbody tr:hover { background: #f2f7ff; }
+
+        .rank {
+            font-weight: 900;
+            font-size: 22px;
+            width: 76px;
+            letter-spacing: 0.2px;
+        }
+
+        .rank.top1 {color: #d97706;}
+        .rank.top2 {color: #6b7289;}
+        .rank.top3 {color: #b45309;}
+
+        tr.row-1 {background: #fff2cc !important;}
+        tr.row-2 {background: #fce8e6 !important;}
+        tr.row-3 {background: #e7f3ff !important;}
+        tr.row-4 {background: #e9f7ef !important;}
+        tr.row-5 {background: #f3e8ff !important;}
+        tr.row-6 {background: #fff0f6 !important;}
+        tr.row-7 {background: #e6fffb !important;}
+        tr.row-8 {background: #f0f4ff !important;}
+        tr.row-9 {background: #f9fbe7 !important;}
+        tr.row-10 {background: #fef7ff !important;}
+
+        .hl { background: #fff7cc !important;}
+
+        .footer {
+            max-width: var(--max-w);
+            margin: 14px auto 0;
+            color: #666;
+            font-size: 12px;
+            line-height: 1.4;
+            padding: 0 2px;
+        }
+
+        @media (max-width: 769px) { .wrap { width: var(--max-w);}}
+        @media (max-width: 768px) { .wrap {width: 100%;}}
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="header">
+            <div>
+                <div class="title">🏆랭킹 top50</div>
+                <div class="sub">기록이 작을수록 더 높은 순위예요 (단위:초)<div>
+            </div>
+        <div>
+        <div class="card">
+            <div class="toolbar">
+                <button class="btn ghost" id="btnRefresh">새로고침</button>
+                <button class="btn" id="btnBack">게임으로 돌아가기</button>
+            </div>
+            <div class="table-wrap">
+                <table aria-label="랭킹 표">
+                    <thead>
+                        <tr>
+                            <th class="rank">순위</th>
+                            <th>아이디</th>
+                            <th>기록(초)</th>
+                            <th>저장시각</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rankBody">
+                        <tr><td colspan="4">불러오는중...</tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="footer">
+            *동점일 경우 저장순서로 정렬됨니다.<br>
+            *실제 서비스에서는 firestore 보안 규칙을 꼭 적용하세요
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        var firebaseconfig = {
+            aapiKey: "AIzaSyDbQDi4OKM_7k93TmyL2UI8ixEDpjVzmuw",
+            authDomain: "webgm-db.firebaseapp.com",
+            projectId: "webgm-db",
+            storageBucket: "webgm-db.firebasestorage.app",
+            messagingSenderId: "51095430771",
+            appId: "1:51095430771:web:138f83f74337fc46792c06",
+        }
+
+        firebase.initializeApp(firebaseconfig);
+        var db = firebase.firestore()
+
+        function getQueryParam(name) {
+            var Query = location.search.replace(/^\?/, '');
+            var parts = Query.split('&');
+            for (var i = 0; i < parts.length; i++) {
+                var kv = parts[i].split('=');
+                if (decodeURIComponent(kv[0])===name) {
+                    return kv[i] ? decodeURIComponent(kv[1]) : '';
+                }
+            }
+            return null;
+        }
+        var lastId = getQueryParam('lastId');
+        var lastTime = getQueryParam('lastTime');
+
+        function to2(n) {
+            if (typeof n !== 'number' || !isFinite(n)) return '';
+            return n.toFixed(2);
+        }
+
+        function fmtDate(ts) {
+            if (!ts || !ts.toDate) return'';
+            var d = ts.toDate();
+
+            var y = d.getFullYear();
+            var m = d.getMonth() + 1;
+            var day = d.getDate();
+            var hh = d.getHours();
+            var mm = d.getMinutes();
+
+            if (m<10) m = '0' +m;
+            if (day<10) day = '0' +day;
+            if (hh<10) hh = '0' +hh;
+            if (mm<10) mm = '0' +mm;
+
+            return y + '-' + m + '-' + day + ' ' + hh + ':' + mm;
+        }
+
+        function escapeHtml(s) {
+            s = String(s);
+            s = s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            s = s.replace(/"/g,'&quot;').replace(/'/g, '&#39;');
+            return s;
+        }
+
+        function loadRanking() {
+            var body = document.getElementById('rankBody');
+
+            body.innerHTML = '<tr><td colspan="4">불러오는중...</td></tr>';
+
+            db.collection('scores')
+            .orderBy('time', 'asc')
+            .limit(50)
+            .get()
+            .then(function(snapshot) {
+                var html = '';
+                var rank = 0;
+
+                snapshot.forEach(function(doc) {
+                    var data = doc.data() || {};
+                    var userId = data.userId || '';
+                    var time = Number(data.time);
+                    var createdAt = data.createdAt || null;
+
+                    rank = rank + 1;
+
+                    var medal = '';
+                    if (rank === 1) {medal = '🥇 '; }
+                    else if (rank === 2) {medal = '🥈 '; }
+                    else if (rank === 3) {medal = '🥉 '; }
+
+                    var rowClass = '';
+                    if (rank <= 10) {rowClass = 'row-' + rank; }
+
+                    var isHL = false;
+                    if (lastId !== null && lastTime !== null) {
+                        if (String(userId) === String(lastId) &&
+                            to2(Number(time)) === to2(Number(lastTime))) {
+                            isHL = true;
+                        }
+                    }
+
+                    var rankClass = '';
+                    if (rank === 1) rankClass = 'top1';
+                    else if (rank === 2) rankClass = 'top2';
+                    else if (rank === 3) rankClass = 'top3';
+                    
+                    html += '<tr class="' + (isHL ? 'hl ' : '') + rowClass + '">';
+                    html +=     '<td class="rank ' + rankClass + '">' + medal + rank + '</td>';
+                    html +=     '<td>' + escapeHtml(userId) + '</td>';
+                    html +=     '<td>' + to2(time) + '</td>';
+                    html +=     '<td>' + fmtDate(createdAt) + '</td>';
+                    html += '</tr>';
+                });
+                
+                if (html === '') {
+                    body.innerHTML = '<tr><td colspan="4">아직 기록이 없습니다.</td></tr>';
+                } else {
+                    body.innerHTML = html;
+                }
+            })
+            .catch(function(err) {
+                console.error(err);
+                body.innerHTML = '<tr><td colspan="4" style="color:#c00;">불러오기에 실패했습니다. 규칙/네트워크를 확인하세요.</td></tr>';
+            });
+        }
+
+        document.getElementById('btnRefresh').onclick = function() {
+            loadRanking();
+        };
+        document.getElementById('btnBack').onclick = function() {
+            location.href = "canvas_js_exam_1_15창작.html";
+        };
+        loadRanking();
+    </script>
+</body>
+</html>

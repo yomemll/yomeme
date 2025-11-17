@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>web Animation <br> game</title>
+    <style>
+         body {
+            margin: 0;
+            padding: 0;
+            text-align: center;
+            font-family: sans-serif;
+            background-color: #222;
+         }
+
+         #canvas {
+            background: #2b2b2b;
+            display: block;
+            margin: 0 auto;
+         }
+
+         .sound-toggle-wrap {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            display: flex;
+            justify-content: center;
+            background : #222;
+            border-style: none;
+            padding: 6px 8px;
+         }
+
+         .sound-toggle {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 700;
+            color: #222;
+            user-select: none;
+         }
+
+         .switch {
+            position: relative;
+            display: inline-block;
+            width: 54px;
+            height: 28px;
+         }
+
+         .switch input {
+            display: none;
+         }
+
+         .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .2s;
+            border-radius: 28px;
+         }
+
+         .slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 3px;
+            top: 3px;
+            background: white;
+            transition: .2s;
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+         }
+
+         input:checked + .slider {
+            background-color: #ccc;
+         }
+         input:checked + .slider:before {
+            transform: translateX(26px);
+         }
+
+         /* PC에서는 600x600 고정 */
+         @media (min-width: 769px) {
+            #canvas {
+                width: 600px;
+                height: 600px;
+            }
+         }
+
+         .controls {
+            display: none;
+            margin-top: 10px;
+         }
+
+         .controls button {
+            font-size: 24px; 
+            padding: 15px 20px;
+            margin: 5px;
+            min-width: 60;
+            border-radius: 10px;
+            border: none;
+            background-color: #333;
+            color: white;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+         }
+
+         @media (max-width: 768px) {
+            #canvas {
+                width: 100vw;
+                height: 100vw;
+            }
+            .controls {
+                display: block;
+            }
+            .pc-guide {
+                display: none;
+            }
+         }
+
+         .rank-btn {
+            margin: 15px auto 30px;
+            padding: 15px 20px;
+            background: #000000;
+            font-size: 18px;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+         }
+
+         .rank-btn:hover {
+            scale: 120%;
+         }
+
+         .rank-btn:active {
+            transform: translateY(2px);
+         }
+
+         .title {
+            text-align: center;
+            font-size: 36px;
+            font-weight: 900;
+            color: #8eff31 !important;
+            margin-top: 16px;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+         }
+
+         @media (max-width:768px) {
+            .game-title{
+                font-size: 28px;
+            }
+         }
+
+         #myDIV {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: oklab(100% 0 -0.00011);
+            border: 2px solid oklab(92.732% -0.10743 0.0241);
+            padding: 30px;
+            z-index: 10;
+         }
+
+         #data {
+            color:aquamarine;
+         }
+         #red {
+            color:aquamarine;
+         }
+    </style>
+</head>
+<body>
+    <div class="sound-toggle-wrap">
+        <div class="suond-toggle">
+            <span id="soundStateEmoji">🔊</span>
+            사운드
+            <label class="switch" title="사운드 On.Off">
+                <input type="checkbox" id="soundToggle" checked />
+                <span class="slider"></span>
+            </label>
+            <span id="soundStateText">ON</span>
+        </div>
+    </div>
+
+    <div class="title">🛸catch alien🛸</div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
+        import { getFirestore, } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyDbQDi4OKM_7k93TmyL2UI8ixEDpjVzmuw",
+            authDomain: "webgm-db.firebaseapp.com",
+            projectId: "webgm-db",
+            storageBucket: "webgm-db.firebasestorage.app",
+            messagingSenderId: "51095430771",
+            appId: "1:51095430771:web:138f83f74337fc46792c06",
+            measurementId: "G-PGVE77HW2H"
+        };
+
+        // Initialize Firebase
+        const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.__db = db;
+    </script>
+
+    <div id="data"></div>
+    <div id="red"></div>
+
+    <div id="myDIV">
+        <div id="msgText">아이디를 입력해주세요</div>
+        <input type="text" id="userId" placeholder="(영어+숫자) 5~15자 이내">
+        <br>
+        <button id="but">저장</button>
+        <button id="cancel">취소</button>
+        <div id="win"></div>
+    </div>
+
+    <script type="module">
+        import { containsSwearWord } from "https://cdn.jsdelivr.net/gh/bc-develop2000/swear_words@main/swear_words.js"
+        
+        window.containsSwearWord = containsSwearWord;
+
+    </script>
+    <script>
+
+        const myDIV = document.getElementById(id="myDiv");
+        const butt = document.getElementById(id="but");
+        const cancelbtn = document.getElementById(id="cancel");
+        const userId = document.getElementById(id="userId");
+
+        butt.addEventListener('click', async() => {
+            const val = userId.value.trim();
+            if (typeof window.containsSwearWord !== 'function') {
+                alert('욕설 필터 모듈을 불러오지 못했습니다 (ESM improt 확인)');
+                console.error('[swear] containsSwearWord not ready');
+                return;
+            }
+            const re = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z0-9]{5,15}$/;
+            if (containsSwearWord(val,"eng")) {
+                alert('사용할 수 없는 단어가 포함되어 있습니다.');;
+                userIdInput.focus();
+                return;
+            }
+            if (!re.test(val)) {
+                alert('아이디는 영어와 숫자를 반드시 포함한 5~15자여야 합니다.');
+                return;
+            }
+            alert(`입력한 아이디는 ${val}입니다`);
+            const record = (mn*60)+sc
+        try {
+            const db = window.__db;
+            if (!db) {
+                alert("DB초기화 실패: firebase설정을 확인하세요");
+                return;
+            }
+            const { collection, addDoc, serverTimestamp } = await import(
+                "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js"
+            );
+            await addDoc(collection(db, "scores"), {
+                userId: val,
+                time: record,
+                createdAt: serverTimestamp()
+            });
+            alert(`저장되었습니다!\nID: ${val}\n기록: ${mn}분${sc}초`);
+
+            location.href = "rankpage.html"
+        } catch (err) {
+            console.error(err);
+        }
+            resetGame();
+        })
+
+        cancelbtn.addEventListener('click', () => {
+            alert("취소하였습니다")
+            resetGame();
+        })
+
+        function resetGame () {
+            mn=0
+            sc=0
+            red=10
+            lll=0
+            var aga =document.getElementById(id="win")
+            aga.style.display = 'none';
+            for(let ii = 1; ii < 11; ii++) {
+                lock[ii]=0
+                ll[ii]=1
+            }
+
+            bgm.pause();
+            stopAllSfx();
+        }
+
+        var lll=(0)
+
+        var sc=(0);
+        var mn=(0);
+        var red=(10);
+        setInterval(wingame,16)
+        function wingame() {
+            if (red==0) {
+                stopAllSfx();
+                lll=1
+                randomStart();
+                document.getElementById("red").innerHTML="red on 0";
+                document.getElementById("win").innerHTML="미션해결 시간= "  + mn + "분 : " + sc + "초";
+                bDisplay=0;
+                var ddiv = document.getElementById(id="myDIV")
+                ddiv.style.display = 'block';
+            }else{
+                var ddiv = document.getElementById(id="myDIV")
+                ddiv.style.display = 'none';
+            }
+        }
+
+        function time() {
+            if (lll==0) {
+                    sc=sc+1;
+                //*console.log(sc);
+                if (sc==60) {
+                    mn=mn+1
+                    sc=0
+                } 
+                document.getElementById("data").innerHTML=mn + "분 : " + sc + "초";
+                document.getElementById("red").innerHTML="red no " + red;
+            }
+        }   
+
+        
+    </script>
+
+    <div class="startSet">
+        <canvas id="canvas" width="600", height="600"></canvas>
+        <div id="start"><button id="startBtn", onclick="gogo()">start</button></div>
+    </div>
+
+    <style>
+        .startSet {
+            position: relative;
+        }
+        #start {
+            position: absolute;
+            top: 300px;
+            width: 1925px;
+        }
+        #startBtn {
+            background-color: rgb(137, 255, 3);
+            height: 100px;
+            width: 250px;
+            border-radius: 10px;
+            border-style: none;
+            font-size: 350%;
+        }
+        #startBtn:hover {
+            animation: wobble 0.45s ease-in-out;
+        }
+
+        @keyframes wobble {
+            0%   { transform: rotate(0deg); }
+            25%  { transform: rotate(3deg); }
+            50%  { transform: rotate(-3deg); }
+            75%  { transform: rotate(2deg); }
+            100% { transform: rotate(0deg); }
+        }
+    </style>
+
+    <div class="controls">
+        <button id="leftBtn">←</button>
+        <button id="rightBtn">→</button>
+        <button id="upBtn">↑</button>
+        <button id="downBtn">↓</button>
+    </div>
+
+    <button class="rank-btn" id="btnRank">랭킹보기</button>
+
+    <script>
+
+        const drawingBoard = document.getElementById('canvas');
+        const drawingPen = drawingBoard.getContext('2d');
+        const drawingpen2 = drawingBoard.getContext('2d');
+
+        // 캔버스 크기 CSS와 맞춰줌 (중요)
+        drawingBoard.width = 600
+        drawingBoard.height = 600
+
+        let soundEnabled = true;
+        const soundToggle = document.getElementById('soundToggle');
+        const soundStateEmoji = document.getElementById('soundStateEmoji');
+        const soundStateText = document.getElementById('soundStateText');
+        const bgm = new Audio('back_snd1.mp3');
+        bgm.loop = true;
+        bgm.preload = 'auto';
+
+        const hitSound = new Audio('effect_snd1.mp3');
+        hitSound.preload = 'auto';
+
+        const endSound = new Audio('back_snd2.mp3');
+        endSound.preload = 'auto';
+
+        function applySoundState() {
+            bgm.muted = hitSound.muted = endSound.muted = !soundEnabled;
+            soundStateEmoji.textContent = soundEnabled ? '🔊' : '🔈';
+            soundStateText.textContent = soundEnabled ? 'ON' : 'OFF';
+            if(!soundEnabled){ bgm.pause(); }
+        }
+        soundToggle.addEventListener('change', ()=>{
+            soundEnabled = soundToggle.checked;
+            applySoundState();
+        });
+        applySoundState();
+        function safePlay(audio) {
+            if (!soundEnabled) return;
+
+            audio.currentTime = 0;
+            const p = audio.play();
+
+            if (p !== undefined) {
+                p.catch(() => {
+                    console.warn("Autoplay blocked or audio playback failed.");
+                });
+            }
+        }
+        function stopAllSfx() {
+            [hitSound, endSound].forEach(a=>{a.pause(); a.currentTime=0;});
+        }
+
+        let x = (drawingBoard.width - 10) / 2;
+        let y = (drawingBoard.height - 10) / 2;
+
+        x=570;
+        y=570;
+
+        const moveAmount = 5;//이동속도
+
+        function moveRight() {
+            x += moveAmount;
+        }
+
+        function moveLeft() {
+            x -= moveAmount;
+        }
+
+        function moveDown() {
+            y += moveAmount;
+        }
+
+        function moveUp() {
+            y -= moveAmount;
+        }
+
+        let moving = false;
+        const fo = new Image
+        const bk = new Image
+        const ri = new Image
+        const lf = new Image
+        fo.src = "fo.png"
+        bk.src = "bk.png"
+        lf.src = "ri.png"
+        ri.src = "lf.png"
+        function drawHero() {
+            if (keys["ArrowUp"]) {
+                moving = true;
+                drawingPen.drawImage(fo, x, y, 30, 30);
+            } else if (keys["ArrowDown"]) {
+                moving = true;
+                drawingPen.drawImage(bk, x, y, 30, 30);
+            } else if (keys["ArrowRight"]) {
+                moving = true;
+                drawingPen.drawImage(ri, x, y, 30, 30);
+            } else if (keys["ArrowLeft"]) {
+                moving = true;
+                drawingPen.drawImage(lf, x, y, 30, 30);
+            } else {
+                drawingPen.drawImage(bk, x, y, 30, 30);
+            }
+        }
+
+        let xx = new Array(10);
+        let yy = new Array(10);
+
+        var bx = new Array(5);
+        var by = new Array(5);
+
+        var go = true;
+
+        function gogo() {
+        safePlay(endSound);
+        var startdiv = document.getElementById(id="start")
+        startdiv.style.display = 'none';
+        setInterval(time,600)
+        if (go==true) {
+            for (let xi=1; xi<11; xi++) {
+                xx[xi]=Math.random()*(590 - 0 +1) + 0;
+                yy[xi]=Math.random()*(590 - 0 +1) + 0;
+            }
+            for (let vi=1; vi<6; vi++) {
+                bx[vi]=Math.random()*(590 - 0 +1) + 0;
+                by[vi]=Math.random()*(590 - 0 +1) + 0;
+            } 
+        }
+        go=false;
+        }
+
+        function randomStart() {
+            for (let v=1; v<11; v++) {
+                xx[v]=Math.random()*(590 - 0 +1) + 0;
+                yy[v]=Math.random()*(590 - 0 +1) + 0;
+            }
+        }
+
+        const enemyImg = new Image();  // 새로운 이미지 객체 생성
+        enemyImg.src = "a.png"; 
+        function enemy1() {
+            drawingpen2.drawImage(enemyImg,xx[1],yy[1],40,40);
+        }
+        function enemy2() {
+            drawingpen2.drawImage(enemyImg,xx[2],yy[2],40,40);
+        }
+        function enemy3() {
+            drawingpen2.drawImage(enemyImg,xx[3],yy[3],40,40);
+        }
+        function enemy4() {
+            drawingpen2.drawImage(enemyImg,xx[4],yy[4],40,40);
+        }
+        function enemy5() {
+            drawingpen2.drawImage(enemyImg,xx[5],yy[5],40,40);
+        }
+        function enemy6() {
+            drawingpen2.drawImage(enemyImg,xx[6],yy[6],40,40);
+        }
+        function enemy7() {
+            drawingpen2.drawImage(enemyImg,xx[7],yy[7],40,40);
+        }
+        function enemy8() {
+            drawingpen2.drawImage(enemyImg,xx[8],yy[8],40,40);
+        }
+        function enemy9() {
+            drawingpen2.drawImage(enemyImg,xx[9],yy[9],40,40);
+        }
+        function enemy10() {
+            drawingpen2.drawImage(enemyImg,xx[10],yy[10],40,40);
+        }
+
+        const ER = new Image;
+        const MS = new Image;
+        const ST = new Image;
+        const UR = new Image;
+        const NP = new Image;
+        ER.src = "ER.png";
+        MS.src = "MS.png";
+        ST.src = "ST.png";
+        UR.src = "UR.png";
+        NP.src = "NP.png";
+        function enemyb1() {
+            drawingpen2.drawImage(ER,bx[1],by[1],50,50);
+        }
+        function enemyb2() {
+            drawingpen2.drawImage(MS,bx[2],by[2],50,50);
+        }
+        function enemyb3() {
+            drawingpen2.drawImage(ST,bx[3],by[3],60,30);
+        }
+        function enemyb4() {
+            drawingpen2.drawImage(UR,bx[4],by[4],50,50);
+        }
+        function enemyb5() {
+            drawingpen2.drawImage(NP,bx[5],by[5],50,50);
+        }
+
+        function ruqcla() {
+            for(let xii=1; xii<11; xii++) {
+                for(let xiii=1; xiii<6; xiii++) {
+                    if (bx[xiii]==xx[xii]) {
+                        xx[xii]=xx[xii]-40;
+                    }
+                }
+            }
+            for(let xiv=1; xiv<11; xiv++) {
+                for(let xv=1; xv<6; xv++) {
+                    if (by[xv]==yy[xiv]) {
+                        yy[xiv]=yy[xiv]-40;
+                    }
+                }
+            }
+        }
+
+
+        function bound() {
+            if (x > 590) {
+                x =590;
+            }
+            if (x < 0) {
+                x =0;
+            }
+            if (y > 590) {
+                y =590;
+            }
+            if (y < 0) {
+                y =0;
+            }
+        }
+
+        let herox
+        let heroy
+
+        let lock = new Array(5);//*lock=0
+        for(let iii = 1; iii < 11; iii++) {
+            lock[iii]=0
+        }
+        let enemy1x = new Array(10);
+        let enemy1y = new Array(10);
+        var ll = new Array(10);
+        for(let iv = 1; iv < 11; iv++) {
+            ll[iv]=1
+        }
+        var l=(0)
+
+        let randomlock = 0;
+
+        function suondPlay() {
+            if (soundEnabled){
+                hitSound.onended = () => {
+                    endSound.onended
+                    bgm.pause();
+                }
+            safePlay(hitSound);
+            }
+        }
+
+        function collision1() {
+            herox=(x+10);
+            heroy=(y+10);
+
+            for(let i = 1; i < 11; i++) {//*충돌검사 for문 바꾸기
+                enemy1x[i]=(xx[i]+20);
+                enemy1y[i]=(yy[i]+20);
+                if (herox>=xx[i]&&heroy>=yy[i]&&x<=enemy1x[i]&&y<=enemy1y[i]) {
+                    if (ll[i]==1) {
+                        suondPlay();
+                        randomlock = 0;
+                        lock[i]=1;
+                        l=1
+                        redm()
+                        l=0
+                        ll[i]=0
+                    }
+                }
+            }
+        }
+
+        let enemybx = new Array(5);
+        let enemyby = new Array(5);
+
+        let lockb = new Array(5);
+
+        function collision2() {
+            for(let vii = 1; vii < 6; vii++) {
+                enemybx[vii]=(bx[vii]+20);
+                enemyby[vii]=(by[vii]+20);
+                if (herox>=bx[vii]&&heroy>=by[vii]&&x<=enemybx[vii]&&y<=enemyby[vii]) {
+                    suondPlay();
+                    for(let viii=1; viii < 11; viii++) {
+                        if(viii==1 && randomlock==0) {
+                            randomStart();
+                            randomlock=1;
+                        }
+                        lock[viii]=0;
+                        ll[viii]=1;
+                        red=10;
+                    }
+                }
+            }
+        }
+
+        function redm() {
+            if (l==1) {
+                red=red-1;
+            }
+        }
+
+        function draw() {
+            drawingPen.clearRect(0, 0, drawingBoard.width, drawingBoard.height);
+            ruqcla();
+            drawHero();
+            bound();
+
+            if(lock[1]==0) {
+                enemy1();
+            }
+            if(lock[2]==0) {
+                enemy2();    
+                }
+            if(lock[3]==0) {
+                enemy3();    
+                }
+            if(lock[4]==0) {
+                enemy4();    
+                }
+            if(lock[5]==0) {
+                enemy5();    
+                }
+            if(lock[6]==0) {
+                enemy6();    
+                }
+            if(lock[7]==0) {
+                enemy7();    
+                }
+            if(lock[8]==0) {
+                enemy8();    
+                }
+            if(lock[9]==0) {
+                enemy9();    
+                }
+            if(lock[10]==0) {
+                enemy10();
+            }
+
+            enemyb1();
+            enemyb2();
+            enemyb3();
+            enemyb4();
+            enemyb5();
+
+            collision1();
+            collision2();
+
+            if (keys.ArrowLeft) moveLeft();
+            if (keys.ArrowRight) moveRight();
+            if (keys.ArrowDown) moveDown();
+            if (keys.ArrowUp) moveUp();
+        }
+
+        setInterval(draw, 16); // 60fps
+
+        function xy() {
+            for(let x = 1; x < 11;x++) {
+                console.log(lock[x]);
+            }
+        }
+        setInterval(xy, 1600)
+
+        const keys = {
+            ArrowLeft : false,
+            ArrowRight : false,
+            ArrowUp : false,
+            ArrowDown : false
+        };
+        // PC 방향키 조작
+        document.addEventListener('keydown', (e) => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = true;
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = false;
+                if (red==0) {
+                    stopAllSfx();
+                    safePlay(bgm);
+                }
+            }
+        });
+
+        //*모바일
+                const setBtnHold = (key, isdown) => {
+            keys[key] = isdown;
+        };
+        
+        const bindButton = (id, key) => {
+            const btn = document.getElementById(id);
+            btn.addEventListener('touchstart', () => setBtnHold(key, true));
+            btn.addEventListener('touchend', () => setBtnHold(key, false));
+            btn.addEventListener('mousedown', () => setBtnHold(key, true));
+            btn.addEventListener('mouseup', () => setBtnHold(key, false));
+            btn.addEventListener('mowseleave', () => setBtnHold(key, false));
+        };
+
+        bindButton("leftBtn", "ArrowLeft");
+        bindButton("rightBtn", "ArrowRight");
+        bindButton("upBtn", "ArrowUp");
+        bindButton("downBtn", "ArrowDown");
+
+        document.getElementById('btnRank').addEventListener('click', function() {
+            location.href = "rankpage.html"
+        });
+
+    </script>
+
+    <script>//디자인
+    setInterval(chroma, 16);
+    let hue = 0;
+    function chroma() {
+        const canvasCSSStyle = document.getElementById("canvas");
+        canvasCSSStyle.style.border = `3px solid hsl(${hue}, 100%, 50%)`;
+
+        const rankbtn = document.getElementById("btnRank");
+        rankbtn.style.color = `hsl(${hue}, 100%, 50%)`;
+
+        hue = (hue + 1) % 360;
+    };
+    </script>
+</body>
+</html>
