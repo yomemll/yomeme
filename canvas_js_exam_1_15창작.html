@@ -581,6 +581,29 @@
             drawingpen2.drawImage(NP,bx[5],by[5],50,50);
         }
 
+        var enemyMovingData = new Array(5)
+
+        for(let movingGap = 1; movingGap < 6; movingGap++) {
+            enemyMovingData[movingGap] = Math.random() * 150 - 50;
+        }
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        let direction = 1;
+
+        async function enemyMove() {
+            for (let xv = 1; xv < 6; xv++) {
+                bx[xv] += enemyMovingData[xv] * direction;
+                by[xv] += enemyMovingData[xv] * direction;
+            }
+
+            await sleep(1000);
+
+            direction *= -1;
+        }
+        setInterval(enemyMove, 2000);
+
         function ruqcla() {
             for(let xii=1; xii<11; xii++) {
                 for(let xiii=1; xiii<6; xiii++) {
@@ -747,11 +770,9 @@
         setInterval(draw, 16); // 60fps
 
         function xy() {
-            for(let x = 1; x < 11;x++) {
-                console.log(lock[x]);
-            }
+
         }
-        setInterval(xy, 1600)
+        //setInterval(xy, 1600)
 
         const keys = {
             ArrowLeft : false,
