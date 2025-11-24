@@ -57,7 +57,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #ccc;
+            background-color: #ff2b2b;
             transition: .2s;
             border-radius: 28px;
          }
@@ -69,17 +69,18 @@
             width: 22px;
             left: 3px;
             top: 3px;
-            background: white;
+            background: rgb(0, 0, 0);
             transition: .2s;
             border-radius: 50%;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
          }
 
          input:checked + .slider {
-            background-color: #ccc;
+            background-color: #00ce6e;
          }
          input:checked + .slider:before {
             transform: translateX(26px);
+            background: #111;
          }
 
          /* PC에서는 600x600 고정 */
@@ -163,8 +164,7 @@
             top: 30%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: oklab(100% 0 -0.00011);
-            border: 2px solid oklab(92.732% -0.10743 0.0241);
+            background: rgba(92, 255, 77, 0.568);
             padding: 30px;
             z-index: 10;
          }
@@ -174,6 +174,32 @@
          }
          #red {
             color:aquamarine;
+         }
+
+         #but {
+            border-style: none;
+            color:rgb(0, 0, 0);
+            background-color: #00ce6e;
+         }
+         #cancel {
+            border-style: none;
+            color:rgb(0, 0, 0);
+            background-color: #00ce6e;
+         }
+
+         #but:hover {
+            transform: scale(110%);
+            color:#8eff31;
+         }
+         #cancel:hover {
+            transform: scale(110%);
+            color:#ff2b2b;
+         }
+
+         #userId{
+            background-color: #8eff31;
+            color: black;
+            border-style: none;
          }
     </style>
 </head>
@@ -496,23 +522,25 @@
         var by = new Array(5);
 
         var go = true;
+        var enemyStart = false;
 
         function gogo() {
-        safePlay(endSound);
-        var startdiv = document.getElementById(id="start")
-        startdiv.style.display = 'none';
-        setInterval(time,600)
-        if (go==true) {
-            for (let xi=1; xi<11; xi++) {
-                xx[xi]=Math.random()*(590 - 0 +1) + 0;
-                yy[xi]=Math.random()*(590 - 0 +1) + 0;
+            safePlay(endSound);
+            var startdiv = document.getElementById(id="start")
+            startdiv.style.display = 'none';
+            setInterval(time,600)
+            if (go==true) {
+                for (let xi=1; xi<11; xi++) {
+                    xx[xi]=Math.random()*(590 - 0 +1) + 0;
+                    yy[xi]=Math.random()*(590 - 0 +1) + 0;
+                }
+                for (let vi=1; vi<6; vi++) {
+                    bx[vi]=Math.random()*(590 - 0 +1) + 0;
+                    by[vi]=Math.random()*(590 - 0 +1) + 0;
+                } 
             }
-            for (let vi=1; vi<6; vi++) {
-                bx[vi]=Math.random()*(590 - 0 +1) + 0;
-                by[vi]=Math.random()*(590 - 0 +1) + 0;
-            } 
-        }
-        go=false;
+            go=false;
+            enemyStart=true;
         }
 
         function randomStart() {
@@ -565,8 +593,29 @@
         ST.src = "ST.png";
         UR.src = "UR.png";
         NP.src = "NP.png";
+
+        let angle = 0;
+        let angle2 = 0;
+        let radius = Math.floor(Math.random() * (50 - 75 + 1)) + 75;
+        let radius2 = Math.floor(Math.random() * (100 - 200 + 1)) + 200;
+        let centerX = Math.floor(Math.random() * (500 - 100 + 1)) + 100;
+        let centerY =  centerX
+        let centerX2 = Math.floor(Math.random() * (400 - 200 + 1)) + 200;
+        let centerY2 =  centerX2
+
         function enemyb1() {
-            drawingpen2.drawImage(ER,bx[1],by[1],50,50);
+            // 각도 증가 (회전 속도)
+            angle += 0.1;
+
+            // 원 모양 궤도로 이동
+            bx[1] = centerX + radius * Math.cos(angle);
+            by[1] = centerY + radius * Math.sin(angle);
+
+            drawingpen2.save();
+            drawingpen2.translate(bx[1] + 25, by[1] + 25);
+            drawingpen2.rotate(angle);
+            drawingpen2.drawImage(ER, -25, -25, 50, 50);
+            drawingpen2.restore();
         }
         function enemyb2() {
             drawingpen2.drawImage(MS,bx[2],by[2],50,50);
@@ -575,13 +624,23 @@
             drawingpen2.drawImage(ST,bx[3],by[3],60,30);
         }
         function enemyb4() {
-            drawingpen2.drawImage(UR,bx[4],by[4],50,50);
+
+            angle2 -= 0.03;
+
+            bx[4] = centerX2 + radius2 * Math.cos(angle2);
+            by[4] = centerY2 + radius2 * Math.sin(angle2);
+
+            drawingpen2.save();
+            drawingpen2.translate(bx[4] + 25, by[4] + 25);
+            drawingpen2.rotate(angle2);
+            drawingpen2.drawImage(UR, -25, -25, 50, 50);
+            drawingpen2.restore();
         }
         function enemyb5() {
             drawingpen2.drawImage(NP,bx[5],by[5],50,50);
         }
 
-        var enemyMovingData = new Array(5)
+        var enemyMovingData = new Array(6)
 
         for(let movingGap = 1; movingGap < 6; movingGap++) {
             enemyMovingData[movingGap] = Math.random() * 150 - 50;
@@ -590,19 +649,37 @@
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        let direction = 1;
-
-        async function enemyMove() {
-            for (let xv = 1; xv < 6; xv++) {
-                bx[xv] += enemyMovingData[xv] * direction;
-                by[xv] += enemyMovingData[xv] * direction;
-            }
-
-            await sleep(1000);
-
-            direction *= -1;
+        let eq = new Array(5);
+        for(let eqq = 1; eqq < 6; eqq++) {
+            eq[eqq]=1
         }
-        setInterval(enemyMove, 2000);
+        let virtual = new Array(5);
+        for(let vit = 1; vit < 6; vit++) {
+            virtual[vit]=1
+        }
+
+        let enemyMoveMax1 = Math.floor(Math.random() * (50 - 200 + 1)) + 200;
+        let enemyMoveMax2 = Math.floor(Math.random() * (50 - 200 + 1)) + 200;
+        let enemyMoveMax3 = Math.floor(Math.random() * (50 - 200 + 1)) + 200;
+
+        function enemyMove() {
+            if(virtual[2]==enemyMoveMax1) {eq[2]=eq[2]*-1};
+            if(virtual[2]==0) {eq[2]=eq[2]*-1};
+            bx[2]=bx[2]+eq[2];
+            virtual[2]=virtual[2]+eq[2];
+
+            if(virtual[3]==enemyMoveMax2) {eq[3]=eq[3]*-1};
+            if(virtual[3]==0) {eq[3]=eq[3]*-1};
+            bx[3]=bx[3]+eq[3];
+            by[3]=by[3]+eq[3];
+            virtual[3]=virtual[3]+eq[3];
+
+            if(virtual[5]==enemyMoveMax3) {eq[5]=eq[5]*-1};
+            if(virtual[5]==0) {eq[5]=eq[5]*-1};
+            by[5]=by[5]+eq[5];
+            virtual[5]=virtual[5]+eq[5]
+        };
+        setInterval(enemyMove, 10);
 
         function ruqcla() {
             for(let xii=1; xii<11; xii++) {
@@ -752,11 +829,13 @@
                 enemy10();
             }
 
-            enemyb1();
-            enemyb2();
-            enemyb3();
-            enemyb4();
-            enemyb5();
+            if(enemyStart==true) {
+                enemyb1();
+                enemyb2();
+                enemyb3();
+                enemyb4();
+                enemyb5(); 
+            };
 
             collision1();
             collision2();
@@ -826,6 +905,9 @@
     setInterval(chroma, 16);
     let hue = 0;
     function chroma() {
+        const loginBorder = document.getElementById("myDIV");
+        loginBorder.style.border =  `3px solid hsl(${hue}, 100%, 50%)`
+
         const canvasCSSStyle = document.getElementById("canvas");
         canvasCSSStyle.style.border = `3px solid hsl(${hue}, 100%, 50%)`;
 
