@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>web Animation <br> game</title>
     <style>
-         body {
+         html,body {
             margin: 0;
             padding: 0;
             text-align: center;
             font-family: sans-serif;
             background-color: #222;
+            overflow-x: hidden;
          }
 
          #canvas {
@@ -125,7 +126,8 @@
 
          .rank-btn {
             margin: 15px auto 30px;
-            padding: 15px 20px;
+            width: 130px;
+            height: 56px;
             background: #000000;
             font-size: 18px;
             font-weight: 700;
@@ -137,6 +139,7 @@
 
          .rank-btn:hover {
             scale: 120%;
+            background-color: #111;
          }
 
          .rank-btn:active {
@@ -201,9 +204,111 @@
             color: black;
             border-style: none;
          }
+
+         #shop {
+            width: 105px;
+            height: 56px;
+            margin-top: 790px;
+            margin-left: 195px;
+            position: absolute;
+            background-color: #000000;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+         }
+
+         #shop:hover {
+            transform: scale(120%);
+            background-color: #111;;
+         }
+
+         #userPw {
+            background-color: #8eff31;
+            color: black;
+            border-style: none;
+         }
+
+         #loginButton {
+            width: 105px;
+            height: 56px;
+            margin-top: 621px;
+            margin-left: 80px;
+            position: absolute;
+            background-color: #000000;
+            font-size: 15px;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+         }
+         #loginButton:hover {
+            transform: scale(120%);
+            background-color: #111;;
+         }
+
+         #myDIV2 {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(92, 255, 77, 0.568);
+            padding: 30px;
+            z-index: 10;
+            display: none;
+         }
+
+         #loginId {
+            background-color: #8eff31;
+            color: black;
+            border-style: none;
+         }
+
+         #loginPw {
+            background-color: #8eff31;
+            color: black;
+            border-style: none;
+         }
+
+         #login {
+            background-color: #00ce6e;
+            color: black;
+            border-style: none;
+         }
+
+         #login:hover {
+            transform: scale(120%);
+         }
+
+         #myBestScore {
+            position: absolute;
+            color:#00ce6e;
+            margin-top: 1;
+            z-index: 100;
+            font-size: 25pt;
+         }
+
+        #myDIV3 {
+            position: absolute;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(92, 255, 77, 0.568);
+            padding: 30px;
+            z-index: 10;
+            display: none;
+            color:#00ce6e;
+         }
     </style>
 </head>
 <body>
+    <div id="myBestScore">내 최고기록=???초</div>
+
+    <button id="shop">캐릭터 바꾸기</button>
+
     <div class="sound-toggle-wrap">
         <div class="suond-toggle">
             <span id="soundStateEmoji">🔊</span>
@@ -221,7 +326,7 @@
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-app.js";
-        import { getFirestore, } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js";
         // TODO: Add SDKs for Firebase products that you want to use
         // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -241,18 +346,119 @@
         const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
         const db = getFirestore(app);
         window.__db = db;
+        window.getDoc = getDoc;
+        window.setDoc = setDoc;
+        window.doc = doc;
+
+        async function getData(inputId) {
+            const docRef = doc(db, "scores", `${inputId}`);//firebase에서 저장된 값 가져오기
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                console.log("Document data:", docSnap.data());
+                return docSnap.data();
+            } else {
+                console.log("No such document!");//아이디 체크
+                alert("아이디가 달라요")
+            }
+        }
+
+        const loginId = document.getElementById("loginId");
+        const loginPw = document.getElementById("loginPw");
+        const login = document.getElementById("login");
+
+        login.addEventListener('click', async() => {
+            const inputId = loginId.value.trim();
+            const inputPw = loginPw.value.trim();
+            await getData(inputId);
+
+            const data = await getData(inputId); // getData에서 반환된 데이터 사용
+            if (!data) {
+                return
+            };
+
+            const Id = data.userId.toString().trim().replace(/\s/g,"");
+            const Pw = data.userPw.toString().trim().replace(/\s/g,"");
+            const time = data.time
+            const myDIV22 = document.getElementById("myDIV2")
+            
+            console.log("ID:", Id);
+            console.log("PW:", Pw);
+            console.log("Time:", time);
+
+            if (loginPw.value===Pw) {//비번 체크
+                alert("로그인 성공!");
+                myDIV22.style.display = 'none'
+                Best();
+                onLogin=1;
+            } else {
+                alert("비밀번호가 달라요");
+            }
+        });
+
+        const myBestScore = document.getElementById("myBestScore");
+        async function Best() {
+            const inputId = loginId.value.trim();
+            const data = await getData(inputId); // getData에서 반환된 데이터 사용
+            if (!data) {
+                return
+            };
+            const time = data.time
+            if(rTime<time) {  
+                document.getElementById("myBestScore").innerHTML="내 최고기록=" + time + "초";
+            };
+        };
+
+        const act = document.getElementById("act")
+        act.addEventListener('click', async() => {
+            const inputId = loginId.value.trim();
+            const data = await getData(inputId); // getData에서 반환된 데이터 사용
+            if (!data) {
+                return
+            };
+            const Id = data.userId;
+            const ttt = data.time;
+            window.ttt = ttt
+            if (rTime>ttt) {
+                const ref = doc(db, "scores", `${Id}`);
+                await updateDoc(ref, {
+                    time: rTime
+                });
+            };
+        });
     </script>
 
     <div id="data"></div>
     <div id="red"></div>
 
+    <button id="loginButton">로그인</button>
+
     <div id="myDIV">
         <div id="msgText">아이디를 입력해주세요</div>
         <input type="text" id="userId" placeholder="(영어+숫자) 5~15자 이내">
         <br>
+        <div id="msgText2">비밀번호를 입력해주세요</div>
+        <input type="text" id="userPw" placeholder="(영어+숫자) 5~15자 이내">
+        <br>
         <button id="but">저장</button>
         <button id="cancel">취소</button>
         <div id="win"></div>
+    </div>
+
+    <div id="myDIV2">
+        <div id="msgText3">아이디를 입력해주세요</div>
+        <input type="text" id="loginId">
+        <br>
+        <div id="msgText4">비밀번호를 입력해주세요</div>
+        <input type="text" id="loginPw">
+        <br>
+        <button id="login">로그인</button>
+    </div>
+
+    <div id="myDIV3">
+        최고기록 갱신!
+        <div id="bestSee"></div>
+        <button id="act">확인</button>
     </div>
 
     <script type="module">
@@ -263,13 +469,20 @@
     </script>
     <script>
 
+        //Christmas Party    kornevmusic
+        //Sweet Life (Luxury Chill)
+        //Soul of the Earth_15min     Grand_Project
+        //Neon Odyssey_Medium 3
+
         const myDIV = document.getElementById(id="myDiv");
         const butt = document.getElementById(id="but");
         const cancelbtn = document.getElementById(id="cancel");
         const userId = document.getElementById(id="userId");
+        const userPw = document.getElementById(id="userPw");
 
         butt.addEventListener('click', async() => {
             const val = userId.value.trim();
+            const val2 = userPw.value.trim();
             if (typeof window.containsSwearWord !== 'function') {
                 alert('욕설 필터 모듈을 불러오지 못했습니다 (ESM improt 확인)');
                 console.error('[swear] containsSwearWord not ready');
@@ -287,6 +500,7 @@
             }
             alert(`입력한 아이디는 ${val}입니다`);
             const record = (mn*60)+sc
+            window.record = record
         try {
             const db = window.__db;
             if (!db) {
@@ -296,8 +510,9 @@
             const { collection, addDoc, serverTimestamp } = await import(
                 "https://www.gstatic.com/firebasejs/12.4.0/firebase-firestore.js"
             );
-            await addDoc(collection(db, "scores"), {
+            await setDoc(doc(db, "scores", `${val}`), {
                 userId: val,
+                userPw: val2,
                 time: record,
                 createdAt: serverTimestamp()
             });
@@ -326,19 +541,24 @@
                 lock[ii]=0
                 ll[ii]=1
             }
-
             bgm.pause();
             stopAllSfx();
         }
 
         var lll=(0)
 
+        var onLogin=0;
         var sc=(0);
         var mn=(0);
+
         var red=(10);
         setInterval(wingame,16)
         function wingame() {
+            const myBestScore = document.getElementById("myBestScore");
             if (red==0) {
+                for(let iii = 1; iii < 11; iii++) {
+                    lock[iii]=1
+                }
                 stopAllSfx();
                 lll=1
                 randomStart();
@@ -346,15 +566,26 @@
                 document.getElementById("win").innerHTML="미션해결 시간= "  + mn + "분 : " + sc + "초";
                 bDisplay=0;
                 var ddiv = document.getElementById(id="myDIV")
-                ddiv.style.display = 'block';
+                const myDIV3 = document.getElementById(id="myDIV3")
+                if (onLogin==0) {
+                    ddiv.style.display = 'block';
+                } else {
+                    if (rTime<) {//현재 기록과 저장된 기록 비교aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+                    myDIV3.style.display = 'block'
+                    document.getElementById("bestSee").innerHTML="내 최고기록=" + rTime + "초";
+                    document.getElementById("myBestScore").innerHTML="내 최고기록=" + rTime + "초";
+                    };
+                }
             }else{
                 var ddiv = document.getElementById(id="myDIV")
                 ddiv.style.display = 'none';
             }
         }
 
+        var rTime = 0
         function time() {
             if (lll==0) {
+                    rTime=rTime+1
                     sc=sc+1;
                 //*console.log(sc);
                 if (sc==60) {
@@ -415,6 +646,9 @@
 
     <script>
 
+        var c = 1
+        var cc = 1
+
         const drawingBoard = document.getElementById('canvas');
         const drawingPen = drawingBoard.getContext('2d');
         const drawingpen2 = drawingBoard.getContext('2d');
@@ -422,6 +656,17 @@
         // 캔버스 크기 CSS와 맞춰줌 (중요)
         drawingBoard.width = 600
         drawingBoard.height = 600
+
+        const shop = document.getElementById("shop");
+        shop.addEventListener('click', () => {
+            if (cc==1) {
+                c=2
+                cc=2
+            } else {
+                c=1
+                cc=1
+            }
+        })
 
         let soundEnabled = true;
         const soundToggle = document.getElementById('soundToggle');
@@ -464,6 +709,10 @@
             [hitSound, endSound].forEach(a=>{a.pause(); a.currentTime=0;});
         }
 
+        async function lava () {
+            drawingPen
+        }
+
         let x = (drawingBoard.width - 10) / 2;
         let y = (drawingBoard.height - 10) / 2;
 
@@ -497,22 +746,72 @@
         bk.src = "bk.png"
         lf.src = "ri.png"
         ri.src = "lf.png"
+
+        const yfo = new Image
+        const yfo2 = new Image
+        const ybk = new Image
+        const ybk2 = new Image
+        const yri = new Image
+        const yri2 = new Image
+        const ylf = new Image
+        const ylf2 = new Image
+        yfo.src = "3.png"
+        yfo2.src = "4.png"
+        ybk.src = "7.png"
+        ybk2.src = "8.png"
+        yri.src = "1.png"
+        yri2.src = "2.png"
+        ylf.src = "5.png"
+        ylf2.src = "6.png"
+
         function drawHero() {
-            if (keys["ArrowUp"]) {
-                moving = true;
-                drawingPen.drawImage(fo, x, y, 30, 30);
-            } else if (keys["ArrowDown"]) {
-                moving = true;
-                drawingPen.drawImage(bk, x, y, 30, 30);
-            } else if (keys["ArrowRight"]) {
-                moving = true;
-                drawingPen.drawImage(ri, x, y, 30, 30);
-            } else if (keys["ArrowLeft"]) {
-                moving = true;
-                drawingPen.drawImage(lf, x, y, 30, 30);
-            } else {
-                drawingPen.drawImage(bk, x, y, 30, 30);
+            if (c==1) {
+                if (keys["ArrowUp"]) {
+                    moving = true;
+                    drawingPen.drawImage(fo, x, y, 30, 30);
+                } else if (keys["ArrowDown"]) {
+                    moving = true;
+                    drawingPen.drawImage(bk, x, y, 30, 30);
+                } else if (keys["ArrowRight"]) {
+                    moving = true;
+                    drawingPen.drawImage(ri, x, y, 30, 30);
+                } else if (keys["ArrowLeft"]) {
+                    moving = true;
+                    drawingPen.drawImage(lf, x, y, 30, 30);
+                } else {
+                    drawingPen.drawImage(bk, x, y, 30, 30);
+                }
             }
+            if (c==2) {
+                if (keys["ArrowUp"]) {
+                    moving = true;
+                    yomeMoveFo();
+                } else if (keys["ArrowDown"]) {
+                    moving = true;
+                    yomeMoveBk();
+                } else if (keys["ArrowRight"]) {
+                    moving = true;
+                    yomeMoveRi();
+                } else if (keys["ArrowLeft"]) {
+                    moving = true;
+                    yomeMoveLf();
+                } else {
+                    drawingPen.drawImage(yfo, x, y, 40, 70);
+                }
+            }
+        }
+
+        async function yomeMoveFo () { 
+            drawingPen.drawImage(ybk, x, y, 40, 70);              
+        }
+        async function yomeMoveBk () { 
+            drawingPen.drawImage(yfo, x, y, 40, 70);               
+        }
+        async function yomeMoveLf () { 
+            drawingPen.drawImage(yri, x, y, 40, 70);              
+        }
+        async function yomeMoveRi () { 
+            drawingPen.drawImage(ylf, x, y, 40, 70);              
         }
 
         let xx = new Array(10);
@@ -550,37 +849,94 @@
             }
         }
 
+        var enemylock = new Array(10);
+        for (let emlock = 1; emlock < 11; emlock++) {
+            enemylock[emlock] = 0
+        };
+
+        const aup = new Image();
+        aup.src = "aupt.png";
         const enemyImg = new Image();  // 새로운 이미지 객체 생성
         enemyImg.src = "a.png"; 
         function enemy1() {
-            drawingpen2.drawImage(enemyImg,xx[1],yy[1],40,40);
+            if (enemylock[1]==0) {
+                drawingpen2.drawImage(enemyImg,xx[1],yy[1],40,40);
+            } else {
+            drawingpen2.drawImage(aup,xx[1],yy[1],70,70);
+            yy[1]=yy[1]-10
+            }
         }
         function enemy2() {
-            drawingpen2.drawImage(enemyImg,xx[2],yy[2],40,40);
+            if (enemylock[2]==0) {
+                drawingpen2.drawImage(enemyImg,xx[2],yy[2],40,40); 
+            } else {
+            drawingpen2.drawImage(aup,xx[2],yy[2],70,70);
+            yy[2]=yy[2]-10
+            }
         }
         function enemy3() {
-            drawingpen2.drawImage(enemyImg,xx[3],yy[3],40,40);
+            if (enemylock[3]==0) {
+                drawingpen2.drawImage(enemyImg,xx[3],yy[3],40,40); 
+            } else {
+            drawingpen2.drawImage(aup,xx[3],yy[3],70,70);
+            yy[3]=yy[3]=-10
+            }
         }
         function enemy4() {
-            drawingpen2.drawImage(enemyImg,xx[4],yy[4],40,40);
+            if (enemylock[4]==0) {
+                drawingpen2.drawImage(enemyImg,xx[4],yy[4],40,40); 
+            } else {
+            drawingpen2.drawImage(aup,xx[4],yy[4],70,70);
+            yy[4]=yy[4]-10
+            }
         }
         function enemy5() {
-            drawingpen2.drawImage(enemyImg,xx[5],yy[5],40,40);
+            if (enemylock[5]==0) {
+                drawingpen2.drawImage(enemyImg,xx[5],yy[5],40,40); 
+            } else {
+            drawingpen2.drawImage(aup,xx[5],yy[5],70,70);
+            yy[5]=yy[5]-10
+            }
         }
         function enemy6() {
-            drawingpen2.drawImage(enemyImg,xx[6],yy[6],40,40);
+            if (enemylock[6]==0) {
+                drawingpen2.drawImage(enemyImg,xx[6],yy[6],40,40); 
+            } else {
+            drawingpen2.drawImage(aup,xx[6],yy[6],70,70);
+            yy[6]=yy[6]-10
+            }
         }
         function enemy7() {
-            drawingpen2.drawImage(enemyImg,xx[7],yy[7],40,40);
+            if (enemylock[7]==0) {
+                drawingpen2.drawImage(enemyImg,xx[7],yy[7],40,40); 
+            } else {
+            drawingpen2.drawImage(aup,xx[7],yy[7],70,70);
+            yy[7]=yy[7]-10
+            }
         }
         function enemy8() {
-            drawingpen2.drawImage(enemyImg,xx[8],yy[8],40,40);
+            if (enemylock[8]==0) {
+                drawingpen2.drawImage(enemyImg,xx[8],yy[8],40,40); 
+            } else {
+            drawingpen2.drawImage(aup,xx[8],yy[8],70,70);
+            yy[8]=yy[8]-10
+            }
         }
         function enemy9() {
-            drawingpen2.drawImage(enemyImg,xx[9],yy[9],40,40);
+            if (enemylock[9]==0) {
+                drawingpen2.drawImage(enemyImg,xx[9],yy[9],40,40); 
+            } else {
+            drawingpen2.drawImage(aup,xx[9],yy[9],70,70);
+            yy[9]=yy[9]-10
+            }
         }
         function enemy10() {
-            drawingpen2.drawImage(enemyImg,xx[10],yy[10],40,40);
+            if (enemylock[10]==0) {
+                drawingpen2.drawImage(enemyImg,xx[10],yy[10],40,40); 
+            } else {
+            drawingpen2.drawImage(aup,xx[10],yy[10],70,70);
+            yy[10]=yy[10]-10
+            }
         }
 
         const ER = new Image;
@@ -717,7 +1073,7 @@
         let herox
         let heroy
 
-        let lock = new Array(5);//*lock=0
+        var lock = new Array(11);//*lock=0
         for(let iii = 1; iii < 11; iii++) {
             lock[iii]=0
         }
@@ -750,9 +1106,9 @@
                 enemy1y[i]=(yy[i]+20);
                 if (herox>=xx[i]&&heroy>=yy[i]&&x<=enemy1x[i]&&y<=enemy1y[i]) {
                     if (ll[i]==1) {
+                        enemylock[i]=1
                         suondPlay();
                         randomlock = 0;
-                        lock[i]=1;
                         l=1
                         redm()
                         l=0
@@ -773,6 +1129,9 @@
                 enemyby[vii]=(by[vii]+20);
                 if (herox>=bx[vii]&&heroy>=by[vii]&&x<=enemybx[vii]&&y<=enemyby[vii]) {
                     suondPlay();
+                    for (let em = 1; em < 11; em++) {
+                        enemylock[em] = 0
+                    };
                     for(let viii=1; viii < 11; viii++) {
                         if(viii==1 && randomlock==0) {
                             randomStart();
@@ -801,33 +1160,43 @@
             if(lock[1]==0) {
                 enemy1();
             }
+
             if(lock[2]==0) {
                 enemy2();    
-                }
+            }
+
             if(lock[3]==0) {
                 enemy3();    
-                }
+            }
+
             if(lock[4]==0) {
                 enemy4();    
-                }
+            }
+
             if(lock[5]==0) {
                 enemy5();    
-                }
+            }
+
             if(lock[6]==0) {
                 enemy6();    
-                }
+            }
+
             if(lock[7]==0) {
                 enemy7();    
-                }
+            }
+
             if(lock[8]==0) {
                 enemy8();    
-                }
+            }
+
             if(lock[9]==0) {
                 enemy9();    
-                }
+            }
+
             if(lock[10]==0) {
                 enemy10();
             }
+
 
             if(enemyStart==true) {
                 enemyb1();
@@ -844,6 +1213,12 @@
             if (keys.ArrowRight) moveRight();
             if (keys.ArrowDown) moveDown();
             if (keys.ArrowUp) moveUp();
+
+            for(let del=1; del<11; del++) {
+                if(yy[del]<0) {
+                    lock[del]=1
+                }
+            }
         }
 
         setInterval(draw, 16); // 60fps
@@ -899,12 +1274,28 @@
             location.href = "rankpage.html"
         });
 
+        let loginBlock = 1
+        const loginButton = document.getElementById("loginButton");
+        const myDIV2 = document.getElementById("myDIV2");
+
+        loginButton.addEventListener('click', ()=> {
+            if (loginBlock==1) {
+                myDIV2.style.display = 'block'
+                loginBlock=0
+            } else {
+                myDIV2.style.display = 'none'
+                loginBlock=1
+            }
+        });
     </script>
 
     <script>//디자인
     setInterval(chroma, 16);
     let hue = 0;
     function chroma() {
+        const shop = document.getElementById("shop");
+        shop.style.color = `hsl(${hue}, 100%, 50%)`;
+
         const loginBorder = document.getElementById("myDIV");
         loginBorder.style.border =  `3px solid hsl(${hue}, 100%, 50%)`
 
@@ -913,6 +1304,12 @@
 
         const rankbtn = document.getElementById("btnRank");
         rankbtn.style.color = `hsl(${hue}, 100%, 50%)`;
+
+        const loginButton = document.getElementById("loginButton");
+        loginButton.style.color = `hsl(${hue}, 100%, 50%)`;
+
+        const myDIV2 = document.getElementById("myDIV2");
+        myDIV2.style.border =  `3px solid hsl(${hue}, 100%, 50%)`
 
         hue = (hue + 1) % 360;
     };
