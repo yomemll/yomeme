@@ -11,8 +11,8 @@
         body {
             margin: 0;
             font-family: system-ui, -apple-system, segoe UI, Roboto, 'Noto sans KR, Arial, sans-serif';
-            background-color: #f6f7fb;
-            color: #222;
+            background-color: #202020;
+            color: #ffffff;
         }
 
         .wrap {
@@ -34,7 +34,7 @@
         }
 
         .sub {
-            color: #666;
+            color: #202020;
             font-size: 12px;
         }
 
@@ -53,8 +53,8 @@
             justify-content: space-between;
             gap: 8px;
             padding: 12px 14px;
-            border-bottom: 1px solid #eee;
-            background: #fafafa;
+            border-bottom: 1px solid #000000;
+            background: #000000;
         }
 
         .btn {
@@ -62,8 +62,8 @@
             border: 0;
             padding: 8px 12px;
             border-radius: 10px;
-            background: #2d6cdf;
-            color: #fff;
+            background: #75ff26;
+            color: #000000;
             font-weight: 700;
             cursor: pointer;
         }
@@ -72,9 +72,25 @@
             transform: translateY(1px);
         }
 
+        #btnback:hover {
+            animation: wobble 0.45s ease-in-out;
+        }
+
+        @keyframes wobble {
+            0%   { transform: rotate(0deg); }
+            25%  { transform: rotate(3deg); }
+            50%  { transform: rotate(-3deg); }
+            75%  { transform: rotate(2deg); }
+            100% { transform: rotate(0deg); }
+        }
+
         .ghost {
-            background: #e9eefc;
-            color: #1b3ea3;
+            background: #75ff26;
+            color: #000000;
+        }
+
+        #btnRefresh:hover {
+            animation: wobble 0.45s ease-in-out;
         }
 
         .table-wrap {
@@ -90,12 +106,12 @@
 
         thead th {
             position: sticky; top: 0;
-            background: #f3f6ff;
-            color: #1b3ea3;
+            background: #000000;
+            color: #ffffff;
             font-weight: 800;
             text-align: left;
             padding: 12px 10px;
-            border-bottom: 1px solid #e2e8ff;
+            border-bottom: 1px solid #000000;
             z-index: 1;
         }
 
@@ -116,27 +132,27 @@
             letter-spacing: 0.2px;
         }
 
-        .rank.top1 {color: #d97706;}
-        .rank.top2 {color: #6b7289;}
-        .rank.top3 {color: #b45309;}
+        .rank.top1 {color: #ffffff;}
+        .rank.top2 {color: #ffee00;}
+        .rank.top3 {color: #d39b00;}
 
-        tr.row-1 {background: #fff2cc !important;}
-        tr.row-2 {background: #fce8e6 !important;}
-        tr.row-3 {background: #e7f3ff !important;}
-        tr.row-4 {background: #e9f7ef !important;}
-        tr.row-5 {background: #f3e8ff !important;}
-        tr.row-6 {background: #fff0f6 !important;}
-        tr.row-7 {background: #e6fffb !important;}
-        tr.row-8 {background: #f0f4ff !important;}
-        tr.row-9 {background: #f9fbe7 !important;}
-        tr.row-10 {background: #fef7ff !important;}
+        tr.row-1 {background: #303030 !important;}
+        tr.row-2 {background: #000000 !important;}
+        tr.row-3 {background: #303030 !important;}
+        tr.row-4 {background: #000000 !important;}
+        tr.row-5 {background: #303030 !important;}
+        tr.row-6 {background: #000000 !important;}
+        tr.row-7 {background: #303030 !important;}
+        tr.row-8 {background: #000000 !important;}
+        tr.row-9 {background: #303030 !important;}
+        tr.row-10 {background: #000000 !important;}
 
-        .hl { background: #fff7cc !important;}
+        .hl { background: #000000 !important;}
 
         .footer {
             max-width: var(--max-w);
             margin: 14px auto 0;
-            color: #666;
+            color: #00c569;
             font-size: 12px;
             line-height: 1.4;
             padding: 0 2px;
@@ -147,10 +163,31 @@
     </style>
 </head>
 <body>
+    <script>
+        setInterval(chroma, 16);
+        let hue = 0;
+
+        function chroma() {
+            const top = document.querySelector("tr.row-1");
+            top.style.color = `hsl(${hue}, 100%, 50%)`;
+
+            const top2 = document.querySelector(".rank.top1");
+            top2.style.color = `hsl(${hue}, 100%, 50%)`;
+
+            const sc2 = document.querySelector("tr.row-2");
+            sc2.style.color = 'yellow';
+
+            const sc3 = document.querySelector("tr.row-3");
+            sc3.style.color = 'd39b00';
+
+            hue = (hue + 1) % 360;
+        }
+    </script>
+
     <div class="wrap">
         <div class="header">
             <div>
-                <div class="title">🏆랭킹 top50</div>
+                <div class="title">🌏랭킹 top50</div>
                 <div class="sub">기록이 작을수록 더 높은 순위예요 (단위:초)<div>
             </div>
         <div>
@@ -263,9 +300,9 @@
                     rank = rank + 1;
 
                     var medal = '';
-                    if (rank === 1) {medal = '🥇 '; }
-                    else if (rank === 2) {medal = '🥈 '; }
-                    else if (rank === 3) {medal = '🥉 '; }
+                    if (rank === 1) {medal = '🌎 '; }
+                    else if (rank === 2) {medal = '🛸 '; }
+                    else if (rank === 3) {medal = '👽 '; }
 
                     var rowClass = '';
                     if (rank <= 10) {rowClass = 'row-' + rank; }
