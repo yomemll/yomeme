@@ -164,24 +164,26 @@
 </head>
 <body>
     <script>
-        setInterval(chroma, 16);
-        let hue = 0;
+        document.addEventListener("DOMContentLoaded", () => {
+            let hue = 0;
+            setInterval(chroma, 16);
 
-        function chroma() {
-            const top = document.querySelector("tr.row-1");
-            top.style.color = `hsl(${hue}, 100%, 50%)`;
+            function chroma() {
+                const top = document.querySelector("tr.row-1");
+                if (top) top.style.color = `hsl(${hue}, 100%, 50%)`;
 
-            const top2 = document.querySelector(".rank.top1");
-            top2.style.color = `hsl(${hue}, 100%, 50%)`;
+                const top2 = document.querySelector(".rank.top1");
+                if (top2) top2.style.color = `hsl(${hue}, 100%, 50%)`;
 
-            const sc2 = document.querySelector("tr.row-2");
-            sc2.style.color = 'yellow';
+                const sc2 = document.querySelector("tr.row-2");
+                if (sc2) sc2.style.color = 'yellow';
 
-            const sc3 = document.querySelector("tr.row-3");
-            sc3.style.color = 'd39b00';
+                const sc3 = document.querySelector("tr.row-3");
+                if (sc3) sc3.style.color = '#d39b00';
 
-            hue = (hue + 1) % 360;
-        }
+                hue = (hue + 1) % 360;
+            }
+        });
     </script>
 
     <div class="wrap">
